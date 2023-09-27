@@ -24,13 +24,13 @@ jobs:
       - name: Checkout geocat-comp-asv
         uses: actions/checkout@v4
         with:
-          repository: NCAR/geocat-comp-asv
+          repository: anissa111/geocat-comp-asv
           persist-credentials: false
           fetch-depth: 0
           ref: main
           path: geocat-comp-asv
 
-      - name: Set up conda environment
+      - name: Set up mamba environment
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: ./build_envs/asv-bench.yml
