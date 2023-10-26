@@ -47,6 +47,7 @@ jobs:
         id: benchmark
         run: |
           cd benchmarks
+          cp -r ../geocat-comp-asv/results results
           asv machine --machine GH-Actions --os ubuntu-latest --arch x64 --cpu "2-core unknown" --ram 7GB
           asv run v2023.02.0..main --skip-existing-commits
 
