@@ -42,12 +42,16 @@ jobs:
           cache-environment: true
           cache-environment-key: "benchmark-${{runner.os}}-${{runner.arch}}-${{env.TODAY}}"
 
+      - name: Copy existing results
+        run: |
+          cp -r geocat-comp-asv/results benchmarks/results
+          tree .
+
       - name: Run benchmarks
         shell: bash -l {0}
         id: benchmark
         run: |
           cd benchmarks
-          cp -r ../geocat-comp-asv/results results
           asv machine --machine GH-Actions --os ubuntu-latest --arch x64 --cpu "2-core unknown" --ram 7GB
           asv run v2023.10.0..main --skip-existing-commits
 
