@@ -44,7 +44,7 @@ jobs:
 
       - name: Copy existing results
         run: |
-          cp -r geocat-comp-asv/results benchmarks/results
+          cp -r geocat-comp-asv/results benchmarks/
           tree .
 
       - name: Run benchmarks
@@ -53,7 +53,7 @@ jobs:
         run: |
           cd benchmarks
           asv machine --machine GH-Actions --os ubuntu-latest --arch x64 --cpu "2-core unknown" --ram 7GB
-          asv run v2023.10.0..main --skip-existing-commits
+          asv run v2023.10.0..main --skip-existing --parallel
 
       - name: Commit and push benchmark results
         run: |
