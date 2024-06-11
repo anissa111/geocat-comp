@@ -10,7 +10,6 @@ concurrency:
 
 jobs:
   test:
-    if: github.repository == 'NCAR/geocat-comp' && github.ref == 'refs/heads/main'
     name: Python (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
