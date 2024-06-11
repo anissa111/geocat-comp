@@ -57,6 +57,7 @@ jobs:
 
       - name: Try PyPI release
         run: |
+          pip index versions geocat-comp
           pip install geocat-comp
           which micromamba
           micromamba list
