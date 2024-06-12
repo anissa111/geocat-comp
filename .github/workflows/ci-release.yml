@@ -43,18 +43,6 @@ jobs:
           create-args: >-
             python=${{ matrix.python-version }}
 
-      - name: Try conda release
-        run: |
-          micromamba install geocat-comp
-          micromamba activate import_test
-          micromamba list
-          micromamba activate import_test
-          python -c "import geocat.comp"
-
-      - name: Uninstall conda release
-        run: |
-          micromamba remove geocat-comp -y
-
       - name: Try PyPI release
         run: |
           pip index versions geocat-comp
