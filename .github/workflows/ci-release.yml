@@ -31,7 +31,7 @@ jobs:
           create-args: >-
             python=${{ matrix.python-version }}
           cache-environment: true
-          cache-environment-key: "release-test ${{runner.os}}-${{runner.arch}}-py${{matrix.python-version}}-${{env.TODAY}}"
+          cache-environment-key: "release_test-${{runner.os}}-py${{matrix.python-version}}-${{steps.date.outputs.date}}"
 
       - name: retry environment setup if failed
         if: steps.env-setup.outcome == 'failure'
@@ -42,7 +42,7 @@ jobs:
           create-args: >-
             python=${{ matrix.python-version }}
           cache-environment: true
-          cache-environment-key: "release-test ${{runner.os}}-${{runner.arch}}-py${{matrix.python-version}}-${{env.TODAY}}"
+          cache-environment-key: "release_test-${{runner.os}}-py${{matrix.python-version}}-${{steps.date.outputs.date}}"
 
   test_conda_release:
     needs: make_env
@@ -66,8 +66,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-name: import_test
-          cache-environment: true
-          cache-environment-key: "release-test ${{runner.os}}-${{runner.arch}}-py${{matrix.python-version}}-${{env.TODAY}}"
+          cache-environment-key: "release_test-${{runner.os}}-py${{matrix.python-version}}-${{steps.date.outputs.date}}"
 
       - name: Try conda release
         run: |
@@ -97,8 +96,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-name: import_test
-          cache-environment: true
-          cache-environment-key: "release-test ${{runner.os}}-${{runner.arch}}-py${{matrix.python-version}}-${{env.TODAY}}"
+          cache-environment-key: "release_test-${{runner.os}}-py${{matrix.python-version}}-${{steps.date.outputs.date}}"
 
       - name: Try PyPI release
         run: |
