@@ -56,7 +56,6 @@ jobs:
           python -c "import geocat.comp"
 
   test_pypi_release:
-    needs: make_env
     name: Python (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
