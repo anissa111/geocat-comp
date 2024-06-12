@@ -10,7 +10,6 @@ concurrency:
 
 jobs:
   test_conda_release:
-    if: github.repository == 'NCAR/geocat-comp' && github.ref == 'refs/heads/main'
     name: Conda python${{ matrix.python-version }}, ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     defaults:
