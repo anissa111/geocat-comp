@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   test_conda_release:
-    name: Python (${{ matrix.python-version }}, ${{ matrix.os }})
+    name: Conda python${{ matrix.python-version }}, ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -56,7 +56,7 @@ jobs:
           python -c "import geocat.comp"
 
   test_pypi_release:
-    name: Python (${{ matrix.python-version }}, ${{ matrix.os }})
+    name: PyPI python${{ matrix.python-version }}, ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
