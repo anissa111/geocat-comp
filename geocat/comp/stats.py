@@ -124,8 +124,7 @@ def eofunc_eofs(data,
     This implementation uses the `eofs package <https://github.com/ajdawson/eofs>`__,
     documented in the following paper: Dawson, Andrew, "eofs: A library
     for EOF analysis of meteorological, oceanographic, and climate data,"
-    Journal of Open Research Software, vol. 4, no. 1, 2016. Further information can be
-    found in the `eofs documentation <https://ajdawson.github.io/eofs/>`__.
+    Journal of Open Research Software, vol. 4, no. 1, 2016.
 
     This implementation provides a few conveniences to the user on top of
     ``eofs`` package that are described below.
@@ -289,8 +288,7 @@ def eofunc_pcs(data,
     This implementation uses the `eofs package <https://github.com/ajdawson/eofs>`__,
     documented in the following paper: Dawson, Andrew, "eofs: A library
     for EOF analysis of meteorological, oceanographic, and climate data,"
-    Journal of Open Research Software, vol. 4, no. 1, 2016. Further information can be
-    found in the `eofs documentation <https://ajdawson.github.io/eofs/>`__.
+    Journal of Open Research Software, vol. 4, no. 1, 2016.
 
     This implementation provides a few conveniences to the user on top of ``eofs`` package that are described below
     in the Parameters section.
