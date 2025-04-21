@@ -6,6 +6,7 @@ dependencies:
   - asv<0.6.2
   - cf_xarray
   - cftime
+  - conda-build
   - cython
   - eofs
   - metpy
