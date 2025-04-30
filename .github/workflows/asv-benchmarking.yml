@@ -20,16 +20,17 @@ jobs:
       - name: Checkout geocat-comp
         uses: actions/checkout@v4
         with:
-          repository: NCAR/geocat-comp
+          repository: anissa111/geocat-comp
           fetch-depth: 0
-      # - name: Checkout geocat-comp-asv
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: NCAR/geocat-comp-asv
-      #     persist-credentials: false
-      #     fetch-depth: 0
-      #     ref: main
-      #     path: geocat-comp-asv
+
+      - name: Checkout geocat-comp-asv
+        uses: actions/checkout@v4
+        with:
+          repository: NCAR/geocat-comp-asv
+          persist-credentials: false
+          fetch-depth: 0
+          ref: main
+          path: geocat-comp-asv
 
       - name: Setup Miniforge
         uses: conda-incubator/setup-miniconda@v3
@@ -66,18 +67,18 @@ jobs:
           conda info
           conda list
 
-      # - name: Copy existing results
-      #   run: |
-      #     if [ -d "geocat-comp-asv/results" ]; then
-      #       cp -r geocat-comp-asv/results benchmarks/
-      #     fi
+      - name: Copy existing results
+        run: |
+          if [ -d "geocat-comp-asv/results" ]; then
+            cp -r geocat-comp-asv/results benchmarks/
+          fi
 
       - name: Run benchmarks
         id: benchmark
         run: |
           cd benchmarks
           asv machine --machine GH-Actions --os ubuntu-latest --arch x64 --cpu "2-core unknown" --ram 7GB
-          asv run v2024.03.0..main --skip-existing --parallel || true
+          asv run
 
       - name: Commit and push benchmark results
         if: github.ref == 'refs/heads/main' && github.repository == 'NCAR/geocat-comp'
