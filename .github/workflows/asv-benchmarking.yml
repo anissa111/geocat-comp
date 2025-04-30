@@ -66,11 +66,11 @@ jobs:
           conda info
           conda list
 
-      - name: Copy existing results
-        run: |
-          if [ -d "geocat-comp-asv/results" ]; then
-            cp -r geocat-comp-asv/results benchmarks/
-          fi
+      # - name: Copy existing results
+      #   run: |
+      #     if [ -d "geocat-comp-asv/results" ]; then
+      #       cp -r geocat-comp-asv/results benchmarks/
+      #     fi
 
       - name: Run benchmarks
         id: benchmark
