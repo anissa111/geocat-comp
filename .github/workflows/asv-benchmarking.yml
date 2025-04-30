@@ -53,7 +53,7 @@ jobs:
             hashFiles('./build_envs/asv-bench.yml') }}-${{ env.CACHE_NUMBER}}
         env:
           # Increase this value to reset cache if the environment file has not changed
-          CACHE_NUMBER: 0
+          CACHE_NUMBER: 1
         id: cache
 
       - name: Update environment
