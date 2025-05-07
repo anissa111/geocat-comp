@@ -205,7 +205,6 @@ def recomposition(
 def scale_voronoi(
     theta: SupportedTypes,
     phi: SupportedTypes,
-    chunk_size: int = 'auto',
 ) -> SupportedTypes:
     """Calculate the area weighting for dataset.
 
@@ -251,6 +250,6 @@ def scale_voronoi(
     ).reshape(theta.shape)
 
     if type(theta) is xr.DataArray:
-        scale = xr.DataArray(scale, dims=theta.dims).chunk(chunk_size)
+        scale = xr.DataArray(scale, dims=theta.dims)
 
     return scale
