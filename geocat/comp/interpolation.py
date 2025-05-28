@@ -485,41 +485,49 @@ def interp_hybrid_to_pressure(
 
     # # Apply vertical interpolation
     # # Apply Dask parallelization with xarray.apply_ufunc
-    # output = xr.apply_ufunc(
-    #     _vertical_remap,
-    #     data,
-    #     pressure,
-    #     exclude_dims=set((lev_dim,)),  # Set dimensions allowed to change size
-    #     input_core_dims=[[lev_dim], [lev_dim]],  # Set core dimensions
-    #     output_core_dims=[["plev"]],  # Specify output dimensions
-    #     vectorize=True,  # loop over non-core dims
-    #     dask="parallelized",  # Dask parallelization
-    #     output_dtypes=[data.dtype],
-    #     dask_gufunc_kwargs={"output_sizes": {
-    #         "plev": len(new_levels)
-    #     }},
-    # )
 
     # If an unchunked Xarray input is given, chunk it just with its dims
-    if data.chunks is None:
-        data_chunk = dict([(k, v) for (k, v) in zip(list(data.dims), list(data.shape))])
-        data = data.chunk(data_chunk)
-
-    # Chunk pressure equal to data's chunks
-    pressure = pressure.chunk(data.chunksizes)
-
-    # Output data structure elements
-    out_chunks = list(data.chunks)
-    out_chunks[interp_axis] = (new_levels.size,)
-    out_chunks = tuple(out_chunks)
+    # if data.chunks is None:
+    #     data_chunk = dict([(k, v) for (k, v) in zip(list(data.dims), list(data.shape))])
+    #     data = data.chunk(data_chunk)
+    #
+    # # Chunk pressure equal to data's chunks
+    # pressure = pressure.chunk(data.chunksizes)
+    #
+    # # Output data structure elements
+    # out_chunks = list(data.chunks)
+    # out_chunks[interp_axis] = (new_levels.size,)
+    # out_chunks = tuple(out_chunks)
     # ''' end of boilerplate
 
-    output = _vertical_remap(
+    # output = _vertical_remap(
+    #     func_interpolate,
+    #     new_levels,
+    #     pressure.data,
+    #     data.data,
+    #     interp_axis,
+    # )
+    # output = xr.DataArray(output, name=data.name, attrs=data.attrs)
+
+    new_levels = xr.DataArray(new_levels, dims=['plev'])
+
+    output = xr.apply_ufunc(
         func_interpolate,
         new_levels,
-        pressure.data,
-        data.data,
+        pressure,
+        data,
         interp_axis,
+        exclude_dims={lev_dim},  # Set dimensions allowed to change size
+        input_core_dims=[["plev"], [lev_dim], [lev_dim], []],  # Set core dimensions
+        output_core_dims=[["plev"]],  # Specify output dimensions
+        vectorize=True,  # loop over non-core dims
+        dask="parallelized",  # Dask parallelization
+        output_dtypes=[data.dtype],
+        on_missing_core_dim="drop",
+        dask_gufunc_kwargs={
+            "output_sizes": {"plev": len(new_levels)},
+            "allow_rechunk": True,
+        },
     )
 
     # End of Workaround
@@ -541,7 +549,7 @@ def interp_hybrid_to_pressure(
         else:
             coords.update({"plev": new_levels})
 
-    output = output.transpose(*dims).assign_coords(coords)
+    output = output.transpose("plev", ...)
 
     if extrapolate:
         output = _vertical_remap_extrap(
