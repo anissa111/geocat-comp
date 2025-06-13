@@ -516,16 +516,14 @@ def interp_hybrid_to_pressure(
         new_levels,
         pressure,
         data,
-        interp_axis,
+        kwargs={"axis": interp_axis},
         exclude_dims={lev_dim},  # Set dimensions allowed to change size
-        input_core_dims=[["plev"], [lev_dim], [lev_dim], []],  # Set core dimensions
+        input_core_dims=[["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
         output_core_dims=[["plev"]],  # Specify output dimensions
         vectorize=True,  # loop over non-core dims
         dask="parallelized",  # Dask parallelization
         output_dtypes=[data.dtype],
-        on_missing_core_dim="drop",
         dask_gufunc_kwargs={
-            "output_sizes": {"plev": len(new_levels)},
             "allow_rechunk": True,
         },
     )
@@ -533,14 +531,10 @@ def interp_hybrid_to_pressure(
     # End of Workaround
     ###############################################################################
 
-    output = xr.DataArray(output, name=data.name, attrs=data.attrs)
-
-    # Set output dims and coords
-    dims = [data.dims[i] if i != interp_axis else "plev" for i in range(data.ndim)]
-
-    # Rename output dims. This is only needed with above workaround block
-    dims_dict = {output.dims[i]: dims[i] for i in range(len(output.dims))}
-    output = output.rename(dims_dict)
+    # re-add name and attrs from input, reorder
+    output = xr.DataArray(output, name=data.name, attrs=data.attrs).transpose(
+        "plev", ...
+    )
 
     coords = {}
     for k, v in data.coords.items():
@@ -548,8 +542,6 @@ def interp_hybrid_to_pressure(
             coords.update({k: v})
         else:
             coords.update({"plev": new_levels})
-
-    output = output.transpose("plev", ...)
 
     if extrapolate:
         output = _vertical_remap_extrap(
