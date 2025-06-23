@@ -462,7 +462,7 @@ def interp_hybrid_to_pressure(
     except ValueError as vexc:
         raise ValueError(vexc.args[0])
 
-    interp_axis = data.dims.index(lev_dim)
+    # interp_axis = data.dims.index(lev_dim)
 
     # Calculate pressure levels at the hybrid levels
     pressure = _pressure_from_hybrid(ps, hyam, hybm, p0)  # Pa
@@ -516,7 +516,7 @@ def interp_hybrid_to_pressure(
         new_levels,
         pressure,
         data,
-        kwargs={"axis": interp_axis},
+        # kwargs={"axis": interp_axis},
         exclude_dims={lev_dim},  # Set dimensions allowed to change size
         input_core_dims=[["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
         output_core_dims=[["plev"]],  # Specify output dimensions
