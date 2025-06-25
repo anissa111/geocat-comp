@@ -511,22 +511,34 @@ def interp_hybrid_to_pressure(
 
     new_levels = xr.DataArray(new_levels, dims=['plev'])
 
-    output = xr.apply_ufunc(
-        func_interpolate,
-        new_levels,
-        pressure,
-        data,
-        # kwargs={"axis": interp_axis},
-        exclude_dims={lev_dim},  # Set dimensions allowed to change size
-        input_core_dims=[["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
-        output_core_dims=[["plev"]],  # Specify output dimensions
-        vectorize=True,  # loop over non-core dims
-        dask="parallelized",  # Dask parallelization
-        output_dtypes=[data.dtype],
-        dask_gufunc_kwargs={
-            "allow_rechunk": True,
-        },
+    print("LOOK HERE 1")
+    print(
+        f"new_levels: {type(new_levels.data)} \npressure: {type(pressure.data)} \ndata: {type(data.data)}"
     )
+    print()
+    print(
+        f"new_levels: {new_levels.shape} \npressure: {pressure.shape} \ndata: {data.shape}"
+    )
+    print()
+
+    output = func_interpolate(new_levels, pressure, data)
+
+    # output = xr.apply_ufunc(
+    #     func_interpolate,
+    #     new_levels,
+    #     pressure,
+    #     data,
+    #     # kwargs={"axis": interp_axis},
+    #     exclude_dims={lev_dim},  # Set dimensions allowed to change size
+    #     input_core_dims=[["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
+    #     output_core_dims=[["plev"]],  # Specify output dimensions
+    #     vectorize=True,  # loop over non-core dims
+    #     dask="allowed",  # do dask parallelization
+    #     output_dtypes=[data.dtype],
+    #     dask_gufunc_kwargs={
+    #         "allow_rechunk": True,
+    #     },
+    # )
 
     # End of Workaround
     ###############################################################################
