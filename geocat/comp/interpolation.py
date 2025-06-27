@@ -462,98 +462,44 @@ def interp_hybrid_to_pressure(
     except ValueError as vexc:
         raise ValueError(vexc.args[0])
 
-    # interp_axis = data.dims.index(lev_dim)
-
     # Calculate pressure levels at the hybrid levels
     pressure = _pressure_from_hybrid(ps, hyam, hybm, p0)  # Pa
 
     # Make pressure shape same as data shape
     pressure = pressure.transpose(*data.dims)
 
-    ###############################################################################
-    # Workaround
-    #
-    # For the issue with metpy's xarray interface:
-    #
-    # `metpy.interpolate.interpolate_1d` had "no implementation found for
-    # 'numpy.apply_along_axis'" issue for cases where the input is
-    # xarray.Dataarray and has more than 3 dimensions (e.g. 4th dim of `time`).
-
-    # Use dask.array.core.map_blocks instead of xarray.apply_ufunc and
-    # auto-chunk input arrays to ensure using only Numpy interface of
-    # `metpy.interpolate.interpolate_1d`.
-
-    # # Apply vertical interpolation
-    # # Apply Dask parallelization with xarray.apply_ufunc
-
-    # If an unchunked Xarray input is given, chunk it just with its dims
-    # if data.chunks is None:
-    #     data_chunk = dict([(k, v) for (k, v) in zip(list(data.dims), list(data.shape))])
-    #     data = data.chunk(data_chunk)
-    #
-    # # Chunk pressure equal to data's chunks
-    # pressure = pressure.chunk(data.chunksizes)
-    #
-    # # Output data structure elements
-    # out_chunks = list(data.chunks)
-    # out_chunks[interp_axis] = (new_levels.size,)
-    # out_chunks = tuple(out_chunks)
-    # ''' end of boilerplate
-
-    # output = _vertical_remap(
-    #     func_interpolate,
-    #     new_levels,
-    #     pressure.data,
-    #     data.data,
-    #     interp_axis,
-    # )
-    # output = xr.DataArray(output, name=data.name, attrs=data.attrs)
-
     new_levels = xr.DataArray(new_levels, dims=['plev'])
 
-    print("LOOK HERE 1")
-    print(
-        f"new_levels: {type(new_levels.data)} \npressure: {type(pressure.data)} \ndata: {type(data.data)}"
-    )
-    print()
-    print(
-        f"new_levels: {new_levels.shape} \npressure: {pressure.shape} \ndata: {data.shape}"
-    )
-    print()
-
-    output = func_interpolate(new_levels, pressure, data)
-
-    # output = xr.apply_ufunc(
-    #     func_interpolate,
-    #     new_levels,
-    #     pressure,
-    #     data,
-    #     # kwargs={"axis": interp_axis},
-    #     exclude_dims={lev_dim},  # Set dimensions allowed to change size
-    #     input_core_dims=[["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
-    #     output_core_dims=[["plev"]],  # Specify output dimensions
-    #     vectorize=True,  # loop over non-core dims
-    #     dask="allowed",  # do dask parallelization
-    #     output_dtypes=[data.dtype],
-    #     dask_gufunc_kwargs={
-    #         "allow_rechunk": True,
-    #     },
-    # )
-
-    # End of Workaround
-    ###############################################################################
-
-    # re-add name and attrs from input, reorder
-    output = xr.DataArray(output, name=data.name, attrs=data.attrs).transpose(
-        "plev", ...
+    # Note: the output array needs to have the level dim named as "plev",
+    # but we'll first have it called "lev" out of this `apply_ufunc` call,
+    # because it will give us convenience to reorder dimensions according to
+    # the input data
+    output = xr.apply_ufunc(
+        func_interpolate,
+        new_levels,
+        pressure,
+        data,
+        # kwargs={"axis": interp_axis},
+        exclude_dims = {lev_dim},  # Set dimensions allowed to change size
+        input_core_dims = [["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
+        output_core_dims = [["lev"]],  # Specify output dimensions
+        vectorize = True,  # loop over non-core dims
+        dask = "parallelized",  # Dask parallelization
+        output_dtypes = [data.dtype],
+        dask_gufunc_kwargs = {
+            "allow_rechunk": True,
+            "output_sizes": {
+                "lev": len(new_levels)
+            },
+        },
     )
 
-    coords = {}
-    for k, v in data.coords.items():
-        if k != lev_dim:
-            coords.update({k: v})
-        else:
-            coords.update({"plev": new_levels})
+    # Re-add name and attrs from input and reorder dims acc. to input
+    # rename level dimension
+    # assign `plev` as coord
+    output = xr.DataArray(output, name=data.name, attrs=data.attrs).transpose(*data.dims)
+    output = output.rename({lev_dim: 'plev'})
+    output = output.assign_coords(plev=('plev', new_levels.data))
 
     if extrapolate:
         output = _vertical_remap_extrap(
