@@ -18,6 +18,9 @@ try:
 except Exception:
     ds_atmos = xr.open_dataset("test/atmos.nc", decode_times=False)
 
+# Concatenate to itself just to test multiple time
+ds_atmos = xr.concat([ds_atmos, ds_atmos], dim="time")
+
 _hyam = ds_atmos.hyam
 _hybm = ds_atmos.hybm
 _p0 = 1000.0 * 100  # Pa
@@ -36,17 +39,18 @@ class Test_interp_hybrid_to_pressure:
             return xr.open_dataset("test/vinth2p_output.nc")
 
     # Sample input data
-    data = ds_atmos.U[0, :, :, :]
+    data = ds_atmos.U
     ps = ds_atmos.PS
     pres3d = np.asarray([1000, 950, 800, 700, 600, 500, 400, 300, 200])  # mb
     pres3d = pres3d * 100  # mb to Pa
 
     def test_interp_hybrid_to_pressure_atmos(self, ds_out) -> None:
+
         u_int = interp_hybrid_to_pressure(
-            self.data,
+            self.data[0, :, :, :],
             self.ps[0, :, :],
-            _hyam,
-            _hybm,
+            _hyam[0,:],
+            _hybm[0,:],
             p0=_p0,
             new_levels=self.pres3d,
             method="log",
@@ -57,23 +61,35 @@ class Test_interp_hybrid_to_pressure:
         nt.assert_array_almost_equal(ds_out.uzon, uzon, 5)
 
     def test_interp_hybrid_to_pressure_atmos_4d(self, ds_out) -> None:
-        data_t = self.data.expand_dims("time")
 
         u_int = interp_hybrid_to_pressure(
-            data_t, self.ps, _hyam, _hybm, p0=_p0, new_levels=self.pres3d, method="log"
+            self.data, self.ps, _hyam, _hybm, p0=_p0, new_levels=self.pres3d, method="log"
         )
 
-        uzon = u_int.mean(dim='lon')
-        # uzon = u_int.mean(dim='lon').isel(time=0)
+        uzon = u_int.mean(dim='lon').isel(time=0)
 
-        uzon_expected_t = ds_out.uzon.expand_dims("time")
-        # uzon_expected_t = ds_out.uzon
-        nt.assert_array_almost_equal(uzon_expected_t, uzon, 5)
+        nt.assert_array_almost_equal(ds_out.uzon, uzon, 5)
+
+    def test_interp_hybrid_to_pressure_atmos_4d_chunked(self, ds_out) -> None:
+
+        u_int = interp_hybrid_to_pressure(
+            self.data.chunk({"time": 1, "lat": 8, "lon": 16}), self.ps, _hyam, _hybm, p0=_p0, new_levels=self.pres3d, method="log"
+        )
+        u_int2 = interp_hybrid_to_pressure(
+            self.data.chunk({"time": 1}), self.ps, _hyam, _hybm, p0=_p0, new_levels=self.pres3d, method="log"
+        )
+
+        uzon = u_int.mean(dim='lon').isel(time=0)
+        uzon2 = u_int2.mean(dim='lon').isel(time=0)
+
+        nt.assert_array_almost_equal(ds_out.uzon, uzon, 5)
+        nt.assert_array_almost_equal(ds_out.uzon, uzon2, 5)
+
 
     def test_interp_hybrid_to_pressure_atmos_wrong_method(self) -> None:
         with pytest.raises(ValueError):
             interp_hybrid_to_pressure(
-                self.data,
+                self.data[0, :, :, :],
                 self.ps[0, :, :],
                 _hyam,
                 _hybm,
@@ -490,7 +506,7 @@ class Test_interp_larger_dataset:
 
     def test_chunked(self, test_input, test_output) -> None:
         data_xr = interp_multidim(
-            test_input.chunk(2), test_output.coords['lat'], test_output.coords['lon']
+            test_input.chunk({"lat": 36, "lon": 72}), test_output.coords['lat'], test_output.coords['lon']
         )
 
         np.testing.assert_almost_equal(test_output, data_xr.values, decimal=8)

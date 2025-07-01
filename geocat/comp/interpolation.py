@@ -472,14 +472,13 @@ def interp_hybrid_to_pressure(
 
     # Note: the output array needs to have the level dim named as "plev",
     # but we'll first have it called "lev" out of this `apply_ufunc` call,
-    # because it will give us convenience to reorder dimensions according to
-    # the input data
+    # because it will give us convenience later to reorder dimensions
+    # according to the input data
     output = xr.apply_ufunc(
         func_interpolate,
         new_levels,
         pressure,
         data,
-        # kwargs={"axis": interp_axis},
         exclude_dims = {lev_dim},  # Set dimensions allowed to change size
         input_core_dims = [["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
         output_core_dims = [["lev"]],  # Specify output dimensions
