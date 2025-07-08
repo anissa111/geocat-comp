@@ -470,6 +470,16 @@ def interp_hybrid_to_pressure(
 
     new_levels = xr.DataArray(new_levels, dims=['plev'])
 
+    print("LOOK HERE 1")
+    print(
+        f"new_levels: {type(new_levels.data)} \npressure: {type(pressure.data)} \ndata: {type(data.data)}"
+    )
+    print()
+    print(
+        f"new_levels: {new_levels.shape} \npressure: {pressure.shape} \ndata: {data.shape}"
+    )
+    print()
+
     # Note: the output array needs to have the level dim named as "plev",
     # but we'll first have it called "lev" out of this `apply_ufunc` call,
     # because it will give us convenience to reorder dimensions according to
@@ -480,24 +490,24 @@ def interp_hybrid_to_pressure(
         pressure,
         data,
         # kwargs={"axis": interp_axis},
-        exclude_dims = {lev_dim},  # Set dimensions allowed to change size
-        input_core_dims = [["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
-        output_core_dims = [["lev"]],  # Specify output dimensions
-        vectorize = True,  # loop over non-core dims
-        dask = "parallelized",  # Dask parallelization
-        output_dtypes = [data.dtype],
-        dask_gufunc_kwargs = {
+        exclude_dims={lev_dim},  # Set dimensions allowed to change size
+        input_core_dims=[["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
+        output_core_dims=[["lev"]],  # Specify output dimensions
+        vectorize=True,  # loop over non-core dims
+        dask="parallelized",  # Dask parallelization
+        output_dtypes=[data.dtype],
+        dask_gufunc_kwargs={
             "allow_rechunk": True,
-            "output_sizes": {
-                "lev": len(new_levels)
-            },
+            "output_sizes": {"lev": len(new_levels)},
         },
     )
 
     # Re-add name and attrs from input and reorder dims acc. to input
     # rename level dimension
     # assign `plev` as coord
-    output = xr.DataArray(output, name=data.name, attrs=data.attrs).transpose(*data.dims)
+    output = xr.DataArray(output, name=data.name, attrs=data.attrs).transpose(
+        *data.dims
+    )
     output = output.rename({lev_dim: 'plev'})
     output = output.assign_coords(plev=('plev', new_levels.data))
 

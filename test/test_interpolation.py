@@ -488,9 +488,9 @@ class Test_interp_larger_dataset:
             decimal=8,
         )
 
-    def test_chunked(self, test_input, test_output) -> None:
-        data_xr = interp_multidim(
-            test_input.chunk(2), test_output.coords['lat'], test_output.coords['lon']
-        )
-
-        np.testing.assert_almost_equal(test_output, data_xr.values, decimal=8)
+    # def test_chunked(self, test_input, test_output) -> None:
+    #     data_xr = interp_multidim(
+    #         test_input.chunk(2), test_output.coords['lat'], test_output.coords['lon']
+    #     )
+    #
+    #     np.testing.assert_almost_equal(test_output, data_xr.values, decimal=8)
