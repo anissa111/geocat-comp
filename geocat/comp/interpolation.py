@@ -163,7 +163,7 @@ def _vertical_remap(func_interpolate, new_levels, xcoords, data, interp_axis=0):
         return func_interpolate(new_levels, xcoords, data, axis=interp_axis)
 
 
-def _temp_extrapolate(data, lev_dim, lev, p_sfc, ps, phi_sfc):
+def _temp_extrapolate(t_bot, lev, p_sfc, ps, phi_sfc):
     r"""This helper function extrapolates temperature below ground using the
     ECMWF formulation described in `Vertical Interpolation and Truncation of
     Model-Coordinate Data <https://dx.doi.org/10.5065/D6HX19NH>`__ by Trenberth,
@@ -174,11 +174,8 @@ def _temp_extrapolate(data, lev_dim, lev, p_sfc, ps, phi_sfc):
 
     Parameters
     ----------
-    data: :class:`xarray.DataArray`
+    t_bot: :class:`xarray.DataArray`
         The temperature at the lowest level of the model.
-
-    lev_dim: str
-        The name of the vertical dimension.
 
     lev: int
         The pressure levels of interest. Must be in the same units as ``ps`` and ``p_sfc``
@@ -201,7 +198,7 @@ def _temp_extrapolate(data, lev_dim, lev, p_sfc, ps, phi_sfc):
     g_inv = 1 / 9.80616  # inverse of gravity
     alpha = 0.0065 * R_d * g_inv
 
-    tstar = data.isel({lev_dim: -1}, drop=True) * (1 + alpha * (ps / p_sfc - 1))
+    tstar = t_bot * (1 + alpha * (ps / p_sfc - 1))
     hgt = phi_sfc * g_inv
     t0 = tstar + 0.0065 * hgt
     tplat = xr.apply_ufunc(np.minimum, 298, t0, dask='parallelized')
@@ -331,7 +328,7 @@ def _vertical_remap_extrap(
     if variable == 'temperature':
         output = output.where(
             output.plev <= p_sfc,
-            _temp_extrapolate(data, lev_dim, output.plev, p_sfc, ps, phi_sfc),
+            _temp_extrapolate(t_bot, output.plev, p_sfc, ps, phi_sfc),
         )
     elif variable == 'geopotential':
         output = output.where(
@@ -366,6 +363,15 @@ def interp_hybrid_to_pressure(
 
     Notes
     -----
+    Atmosphere hybrid-sigma pressure coordinates are commonly defined in two different
+    ways as described below and in CF Conventions. This particular function expects the
+    first formulation. However, with some minor adjustments on the user side it can
+    support datasets leveraging the second formulation as well.  In this case, you can
+    set the input parameters p0=1 and hyam=ap to adapt the function to meet your needs.
+
+    Formulation 1: p(n,k,j,i) = a(k)*p0 + b(k)*ps(n,j,i)
+    Formulation 2: p(n,k,j,i) = ap(k) + b(k)*ps(n,j,i)
+
     ACKNOWLEDGEMENT: We'd like to thank to `Brian Medeiros <https://github.com/brianpm>`__,
     `Matthew Long <https://github.com/matt-long>`__, and `Deepak Cherian <https://github.com/dcherian>`__
     at NSF NCAR for their great contributions since the code implemented here is mostly
@@ -462,54 +468,93 @@ def interp_hybrid_to_pressure(
     except ValueError as vexc:
         raise ValueError(vexc.args[0])
 
+    interp_axis = data.dims.index(lev_dim)
+
     # Calculate pressure levels at the hybrid levels
     pressure = _pressure_from_hybrid(ps, hyam, hybm, p0)  # Pa
 
     # Make pressure shape same as data shape
     pressure = pressure.transpose(*data.dims)
 
-    new_levels = xr.DataArray(new_levels, dims=['plev'])
+    ###############################################################################
+    # Workaround
+    #
+    # For the issue with metpy's xarray interface:
+    #
+    # `metpy.interpolate.interpolate_1d` had "no implementation found for
+    # 'numpy.apply_along_axis'" issue for cases where the input is
+    # xarray.Dataarray and has more than 3 dimensions (e.g. 4th dim of `time`).
 
-    print("LOOK HERE 1")
-    print(
-        f"new_levels: {type(new_levels.data)} \npressure: {type(pressure.data)} \ndata: {type(data.data)}"
-    )
-    print()
-    print(
-        f"new_levels: {new_levels.shape} \npressure: {pressure.shape} \ndata: {data.shape}"
-    )
-    print()
+    # Use dask.array.core.map_blocks instead of xarray.apply_ufunc and
+    # auto-chunk input arrays to ensure using only Numpy interface of
+    # `metpy.interpolate.interpolate_1d`.
 
-    # Note: the output array needs to have the level dim named as "plev",
-    # but we'll first have it called "lev" out of this `apply_ufunc` call,
-    # because it will give us convenience to reorder dimensions according to
-    # the input data
-    output = xr.apply_ufunc(
+    # # Apply vertical interpolation
+    # # Apply Dask parallelization with xarray.apply_ufunc
+    # output = xr.apply_ufunc(
+    #     _vertical_remap,
+    #     data,
+    #     pressure,
+    #     exclude_dims=set((lev_dim,)),  # Set dimensions allowed to change size
+    #     input_core_dims=[[lev_dim], [lev_dim]],  # Set core dimensions
+    #     output_core_dims=[["plev"]],  # Specify output dimensions
+    #     vectorize=True,  # loop over non-core dims
+    #     dask="parallelized",  # Dask parallelization
+    #     output_dtypes=[data.dtype],
+    #     dask_gufunc_kwargs={"output_sizes": {
+    #         "plev": len(new_levels)
+    #     }},
+    # )
+
+    # If an unchunked Xarray input is given, chunk it just with its dims
+    if data.chunks is None:
+        data_chunk = dict([(k, v) for (k, v) in zip(list(data.dims), list(data.shape))])
+        data = data.chunk(data_chunk)
+
+    # Chunk pressure equal to data's chunks
+    pressure = pressure.chunk(data.chunksizes)
+
+    # Output data structure elements
+    out_chunks = list(data.chunks)
+    out_chunks[interp_axis] = (new_levels.size,)
+    out_chunks = tuple(out_chunks)
+    # ''' end of boilerplate
+
+    from dask.array.core import map_blocks
+
+    output = map_blocks(
+        _vertical_remap,
         func_interpolate,
         new_levels,
-        pressure,
-        data,
-        # kwargs={"axis": interp_axis},
-        exclude_dims={lev_dim},  # Set dimensions allowed to change size
-        input_core_dims=[["plev"], [lev_dim], [lev_dim]],  # Set core dimensions
-        output_core_dims=[["lev"]],  # Specify output dimensions
-        vectorize=True,  # loop over non-core dims
-        dask="parallelized",  # Dask parallelization
-        output_dtypes=[data.dtype],
-        dask_gufunc_kwargs={
-            "allow_rechunk": True,
-            "output_sizes": {"lev": len(new_levels)},
-        },
+        pressure.data,
+        data.data,
+        interp_axis,
+        chunks=out_chunks,
+        dtype=data.dtype,
+        drop_axis=[interp_axis],
+        new_axis=[interp_axis],
     )
 
-    # Re-add name and attrs from input and reorder dims acc. to input
-    # rename level dimension
-    # assign `plev` as coord
-    output = xr.DataArray(output, name=data.name, attrs=data.attrs).transpose(
-        *data.dims
-    )
-    output = output.rename({lev_dim: 'plev'})
-    output = output.assign_coords(plev=('plev', new_levels.data))
+    # End of Workaround
+    ###############################################################################
+
+    output = xr.DataArray(output, name=data.name, attrs=data.attrs)
+
+    # Set output dims and coords
+    dims = [data.dims[i] if i != interp_axis else "plev" for i in range(data.ndim)]
+
+    # Rename output dims. This is only needed with above workaround block
+    dims_dict = {output.dims[i]: dims[i] for i in range(len(output.dims))}
+    output = output.rename(dims_dict)
+
+    coords = {}
+    for k, v in data.coords.items():
+        if k != lev_dim:
+            coords.update({k: v})
+        else:
+            coords.update({"plev": new_levels})
+
+    output = output.transpose(*dims).assign_coords(coords)
 
     if extrapolate:
         output = _vertical_remap_extrap(
