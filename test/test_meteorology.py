@@ -378,6 +378,13 @@ class Test_relhum:
         with pytest.raises(ValueError):
             relhum(self.t_def[:10], self.q_def[:10], self.p_def[:9])
 
+    def test_mixed_input_types(self) -> None:
+        assert np.allclose(
+            relhum(np.asarray(self.t_def), xr.DataArray(self.q_def), self.p_def),
+            self.rh_gt_2,
+            atol=0.1,
+        )
+
 
 class Test_relhum_water:
     rh_gt_1 = 46.3574
