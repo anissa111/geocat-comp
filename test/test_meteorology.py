@@ -210,6 +210,10 @@ class Test_heat_index:
         with pytest.raises(ValueError):
             heat_index(xr.DataArray([50, 80, 90]), xr.DataArray([-1, 101, 50]))
 
+    def test_xarray_type_error(self) -> None:
+        with pytest.raises(TypeError):
+            heat_index(self.t1, xr.DataArray(self.rh1))
+
     def test_dims_error(self) -> None:
         with pytest.raises(ValueError):
             heat_index(self.t1[:10], self.rh1[:8])
@@ -373,10 +377,6 @@ class Test_relhum:
     def test_dims_error(self) -> None:
         with pytest.raises(ValueError):
             relhum(self.t_def[:10], self.q_def[:10], self.p_def[:9])
-
-    def test_xarray_type_error(self) -> None:
-        with pytest.raises(TypeError):
-            relhum(self.t_def, xr.DataArray(self.q_def), self.p_def)
 
 
 class Test_relhum_water:
