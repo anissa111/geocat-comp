@@ -1266,15 +1266,22 @@ def relhum(
 
     inputs = [temperature, mixing_ratio, pressure]
 
+    # check input types
+    in_dask = False
+    in_xarray = False
+    in_types = [type(i) for i in inputs]
+    for i, t in zip(inputs, in_types):
+        if t is xr.DataArray:
+            in_xarray = True
+            if i.data.__module__ == 'dask.xarray.core':
+                in_dask = True
+
     # ensure all inputs same size
     if not (np.shape(x) == np.shape(inputs[0]) for x in inputs):
         raise ValueError("relhum: dimensions of inputs are not the same")
 
-    # Get input types
-    in_types = [type(item) for item in inputs]
-
-    # run dask compatible version if input is xarray
-    if xr.DataArray in in_types:
+    # run dask compatible version if dask in input types
+    if in_dask:
         # check all inputs are xarray.DataArray
         if not all(x == xr.DataArray for x in in_types):
             raise TypeError("relhum: if using xarray, all inputs must be xarray")
