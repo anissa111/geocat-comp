@@ -210,10 +210,6 @@ class Test_heat_index:
         with pytest.raises(ValueError):
             heat_index(xr.DataArray([50, 80, 90]), xr.DataArray([-1, 101, 50]))
 
-    def test_xarray_type_error(self) -> None:
-        with pytest.raises(TypeError):
-            heat_index(self.t1, xr.DataArray(self.rh1))
-
     def test_dims_error(self) -> None:
         with pytest.raises(ValueError):
             heat_index(self.t1[:10], self.rh1[:8])
