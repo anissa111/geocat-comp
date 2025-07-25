@@ -1272,11 +1272,9 @@ def relhum(
 
     # check input types
     in_dask = False
-    in_xarray = False
     in_types = [type(i) for i in inputs]
     for i, t in zip(inputs, in_types):
         if t is xr.DataArray:
-            in_xarray = True
             if hasattr(i.data, '__module__'):
                 if i.data.__module__ == 'dask.array.core':
                     in_dask = True
@@ -1291,12 +1289,7 @@ def relhum(
         relative_humidity = _xrelhum(temperature, mixing_ratio, pressure)
 
     else:
-        # ensure in numpy array for function call
-        temperature = np.asarray(temperature)
-        mixing_ratio = np.asarray(mixing_ratio)
-        pressure = np.asarray(pressure)
-
-        # function call for non-dask/xarray
+        # function call for non-dask
         relative_humidity = _relhum(temperature, mixing_ratio, pressure)
 
     # set attributes if output type is xarray

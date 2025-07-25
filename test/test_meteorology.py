@@ -384,6 +384,16 @@ class Test_relhum:
             self.rh_gt_2,
             atol=0.1,
         )
+        assert np.allclose(
+            relhum(self.t_def, xr.DataArray(self.q_def), self.p_def),
+            self.rh_gt_2,
+            atol=0.1,
+        )
+        assert np.allclose(
+            relhum(self.t_def, self.q_def, np.asarray(self.p_def)),
+            self.rh_gt_2,
+            atol=0.1,
+        )
 
 
 class Test_relhum_water:
