@@ -218,13 +218,15 @@ def _relhum(
     """Calculates relative humidity given temperature,
     mixing ratio, and pressure.
 
+    Internal function for inputs other than dask.
+
     Notes and Correspondence: "Improved Magnus Form Approximation of Saturation Vapor Pressure"
     Oleg A. Alduchov and Robert E. Eskridge
     https://doi.org/10.1175/1520-0450(1996)035%3C0601:IMFAOS%3E2.0.CO;2
 
     Parameters
     ----------
-    t : ndarray, :obj:`list`, or :obj:`float`
+    t : ndarray, :class:`xarray.DataArray`, :obj:`list`, or :obj:`float`
         Temperature in Kelvin
 
     w : ndarray, :class:`xarray.DataArray`, :obj:`list`, or :obj:`float`
@@ -766,6 +768,8 @@ def _xrelhum(t: xr.DataArray, w: xr.DataArray, p: xr.DataArray) -> xr.DataArray:
     """Calculates relative humidity with respect to ice, given temperature,
     mixing ratio, and pressure.
 
+    Internal function compatible with dask inputs.
+
      "Improved Magnus' Form Approx. of Saturation Vapor pressure"
      Oleg A. Alduchov and Robert E. Eskridge
      https://journals.ametsoc.org/view/journals/apme/35/4/1520-0450_1996_035_0601_imfaos_2_0_co_2.xml
@@ -1292,7 +1296,7 @@ def relhum(
         # function call for non-dask
         relative_humidity = _relhum(temperature, mixing_ratio, pressure)
 
-    # set attributes if output type is xarray
+    # set attributes if output is xarray
     if isinstance(relative_humidity, xr.DataArray):
         # set xarray attributes
         relative_humidity.attrs['long_name'] = "relative humidity"
