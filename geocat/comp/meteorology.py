@@ -284,6 +284,9 @@ def _relhum(
     maxtemp = 375.16
     mintemp = 173.16
 
+    if not hasattr(t, 'clip'):
+        t = np.asarray(t)
+
     # replace values of t above and below max and min values for temperature
     t = t.clip(mintemp, maxtemp)
 
