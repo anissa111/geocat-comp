@@ -64,5 +64,3 @@ Internal Functionality Helpers
    geocat.comp.meteorology._relhum_water
 
    geocat.comp.meteorology._xheat_index
-
-   geocat.comp.meteorology._xrelhum
