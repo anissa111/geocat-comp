@@ -8,26 +8,49 @@
 Release Notes
 =============
 
-vYYYY.MM.## (unreleased)
+v2025.07.0 (July 15, 2025)
+---------------------------
+This release updates packaging, replaces deprecated xarray functionality, and
+addresses a bug in ``interp_hybrid_to_pressure``.
+
+Bug Fixes
+^^^^^^^^^
+* Change ``interp_hybrid_to_pressure`` to use ``t_bot`` directly for temperature extrapolation rather than the temperature from the (sometimes incorrectly) presumed lowest level by `Katelyn FitzGerald`_ in (:pr:`737`)
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+* Replace deprecated ``xarray.cftime_range`` with ``xarray.date_range`` by `Katelyn FitzGerald`_ in (:pr:`739`)
+
+Maintenance
+^^^^^^^^^^^
+* Streamline packaging and dependencies by `Katelyn FitzGerald`_ in (:pr:`740`)
+
+
+v2025.05.0 (May 20, 2025)
 ------------------------
-This release...
+This release includes documentation improvements, fixes a delta_pressure
+thickness bug, and adds improved CFTime and Datetime object compatibility to
+climatology functionality.
 
 Documentation
 ^^^^^^^^^^^^^
 * Remove reference to NCAR/geocat repo from support page by `Katelyn FitzGerald`_ in (:pr:`709`)
 * Add additional relative humidity documentation by `Cora Schneck`_ in (:pr:`710`)
 * Clarify definition of ``delta_pressure`` by `Katelyn FitzGerald`_ in (:pr:`718`)
+* Correct ``psychrometric_constant`` equation references in documentation by `Cora Schneck`_ in (:pr:`723`)
+* Add note about alternate hybrid-sigma pressure formulation to ``interp_hybrid_to_pressure`` docs by `Katelyn FitzGerald`_ in (:pr:`727`)
 
 Bug Fixes
 ^^^^^^^^^
-* Updates internal climatology function to ensure compatibility with both CFTime and Datetime
-indices by `Katelyn FitzGerald`_ in (:pr:`717`)
+* Update near surface pressure thickness calculations in ``delta_pressure`` for consistency with NCL by `Katelyn FitzGerald`_ in (:pr:`726`)
+* Updates internal climatology function to ensure compatibility with both CFTime and Datetime indices by `Katelyn FitzGerald`_ in (:pr:`717`)
 
 Internal Changes
 ^^^^^^^^^^^^^^^^
-* Updates Github Actions workflows per new guidance by `Cora Schneck`_ in (:pr:`716`)
+* Updates GitHub Actions workflows per new guidance by `Cora Schneck`_ in (:pr:`716`)
 * Adds `blackdoc` to linter for rst and markdown by `Cora Schneck`_ in (:pr:`720`)
 * Unpins ``asv`` and adds Python 3.13 to benchmarking matrix by `Anissa Zacharias`_ in (:pr:`722`)
+* Updates to GitHub Actions workflows by `Katelyn FitzGerald`_ in (:pr:`733`)
 
 v2025.03.0 (March 25, 2025)
 ---------------------------
