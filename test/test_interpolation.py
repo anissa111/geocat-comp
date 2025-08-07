@@ -64,10 +64,8 @@ class Test_interp_hybrid_to_pressure:
         )
 
         uzon = u_int.mean(dim='lon')
-        # uzon = u_int.mean(dim='lon').isel(time=0)
 
         uzon_expected_t = ds_out.uzon.expand_dims("time")
-        # uzon_expected_t = ds_out.uzon
         nt.assert_array_almost_equal(uzon_expected_t, uzon, 5)
 
     def test_interp_hybrid_to_pressure_atmos_wrong_method(self) -> None:
@@ -488,9 +486,9 @@ class Test_interp_larger_dataset:
             decimal=8,
         )
 
-    # def test_chunked(self, test_input, test_output) -> None:
-    #     data_xr = interp_multidim(
-    #         test_input.chunk(2), test_output.coords['lat'], test_output.coords['lon']
-    #     )
-    #
-    #     np.testing.assert_almost_equal(test_output, data_xr.values, decimal=8)
+    def test_chunked(self, test_input, test_output) -> None:
+        data_xr = interp_multidim(
+            test_input.chunk(2), test_output.coords['lat'], test_output.coords['lon']
+        )
+
+        np.testing.assert_almost_equal(test_output, data_xr.values, decimal=8)
