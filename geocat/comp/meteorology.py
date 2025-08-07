@@ -753,13 +753,11 @@ def relhum(
     if not (np.shape(x) == np.shape(inputs[0]) for x in inputs):
         raise ValueError("relhum: dimensions of inputs are not the same")
 
-    # relative_humidity = _relhum(temperature, mixing_ratio, pressure)
+    if not hasattr(temperature, 'clip'):
+        temperature = np.asarray(temperature)
 
     maxtemp = 375.16
     mintemp = 173.16
-
-    if not hasattr(temperature, 'clip'):
-        temperature = np.asarray(temperature)
 
     # replace values of t above and below max and min values for temperature
     temperature = temperature.clip(mintemp, maxtemp)
