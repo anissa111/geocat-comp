@@ -56,6 +56,11 @@ jobs:
           ./build_envs/asv-bench.yml
         if: steps.cache.outputs.cache-hit != 'true'
 
+      - name: Conda list
+        run: |
+          conda info
+          conda list
+
       - name: Run Benchmarks
         shell: bash -l {0}
         id: benchmark
