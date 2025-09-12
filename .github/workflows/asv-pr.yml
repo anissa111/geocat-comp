@@ -64,9 +64,14 @@ jobs:
             🔍 Git commit SHA: ${{ github.sha }}
             ✅ Benchmark Comparison: In Progress
 
-      - name: Debug
+      - name: Consolidate comment id
         run: |
-          echo "${{ steps.fc.outputs.comment-id }}"
+          if [${{ steps.fc.outputs.comment-id }}]
+            then
+              echo "COMMENT_ID=${{ steps.fc.outputs.comment-id }}" >> $GITHUB_ENV
+            else
+              echo "COMMENT_ID=${{ steps.create-comment.outputs.comment-id }}" >> $GITHUB_ENV
+          fi
 
       - name: Cache environment
         uses: actions/cache@v4
@@ -100,7 +105,7 @@ jobs:
           ASV_OPTIONS="--split --show-stderr"
           asv continuous $ASV_OPTIONS ${{ github.event.pull_request.base.sha }} ${GITHUB_SHA}
           # Save compare results
-          echo ${{ env.commit_message }} > asv_compare_results.txt
+          echo ${{ env.comment_message }} > asv_compare_results.txt
           echo "Baseline:  ${{ github.event.pull_request.base.sha }} (${{ github.event.pull_request.base.label }})" >> asv_compare_results.txt
           echo "Contender: ${GITHUB_SHA} ($PR_HEAD_LABEL)" >> asv_compare_results.txt
           asv compare --split ${{ github.event.pull_request.base.sha }} ${GITHUB_SHA} >> asv_compare_results.txt
@@ -116,10 +121,8 @@ jobs:
             ${{ env.ASV_DIR }}/asv_compare_results.txt
 
       - name: Update preview comment
-        if: |
-          steps.fc.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v4
         with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
+          comment-id: ${{ env.COMMENT_ID }}
           edit-mode: replace
-          body-path: asv_compare_results.txtt
+          body-path: asv_compare_results.txt
