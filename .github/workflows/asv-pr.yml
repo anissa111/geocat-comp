@@ -66,7 +66,7 @@ jobs:
 
       - name: Consolidate comment id
         run: |
-          if ["${{ steps.fc.outputs.comment-id }}" != ""]
+          if [ "${{ steps.fc.outputs.comment-id }}" != "" ]
             then
               echo "COMMENT_ID=${{ steps.fc.outputs.comment-id }}" >> $GITHUB_ENV
             else
