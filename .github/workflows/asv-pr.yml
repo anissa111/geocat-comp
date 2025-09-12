@@ -130,4 +130,4 @@ jobs:
         with:
           comment-id: ${{ env.COMMENT_ID }}
           edit-mode: replace
-          body-path: asv_compare_results.txt
+          body-path: ${{ env.ASV_DIR }}/asv_compare_results.txt
