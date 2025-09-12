@@ -66,12 +66,17 @@ jobs:
 
       - name: Consolidate comment id
         run: |
-          if [${{ steps.fc.outputs.comment-id }}]
+          if [${{ steps.fc.outputs.comment-id }} != ""]
             then
               echo "COMMENT_ID=${{ steps.fc.outputs.comment-id }}" >> $GITHUB_ENV
             else
               echo "COMMENT_ID=${{ steps.create-comment.outputs.comment-id }}" >> $GITHUB_ENV
           fi
+
+
+      - name: debug
+        run: |
+          echo ${{env.COMMENT_ID}}
 
       - name: Cache environment
         uses: actions/cache@v4
