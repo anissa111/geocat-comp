@@ -34,8 +34,7 @@ jobs:
           activate-environment: asv-bench
 
       - name: Get date
-        id: get-date
-        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_ENV
         shell: bash
 
       - name: Cache environment
@@ -43,9 +42,8 @@ jobs:
         with:
           path: ${{ env.CONDA }}/envs
           key:
-            conda-${{ runner.os }}--${{ runner.arch }}--${{
-            steps.get-date.outputs.today }}-${{
-            hashFiles('./build_envs/asv-bench.yml') }}-${{ env.CACHE_NUMBER}}
+            conda-${{ runner.os }}--${{ runner.arch }}--${{ env.today }}-
+              ${{ hashFiles('./build_envs/asv-bench.yml') }}-${{ env.CACHE_NUMBER}}
         env:
           # Increase this value to reset cache if the environment file has not changed
           CACHE_NUMBER: 0
