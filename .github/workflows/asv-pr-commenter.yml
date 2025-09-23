@@ -8,17 +8,12 @@ on:
     types:
       - completed
 
-env:
-  PR_HEAD_LABEL: ${{ github.event.pull_request.head.label }}
-
 jobs:
   make_comment:
     runs-on: ubuntu-latest
     if: >
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'
-    env:
-      ASV_DIR: "./benchmarks"
 
     steps:
 
@@ -58,9 +53,7 @@ jobs:
         run: |
           tree .
           cat ./pr/NR
-          echo "pr_number=$(cat ./pr/NR)" >> $GITHUB_ENV
-
-
+          echo "pr_number=$(cat ./NR)" >> $GITHUB_ENV
 
       - name: fetch repo name
         id: repo-name
@@ -112,4 +105,4 @@ jobs:
         with:
           comment-id: ${{ env.COMMENT_ID }}
           edit-mode: replace
-          body-path: ${{ env.ASV_DIR }}/asv_compare_results.txt
+          body-path: ./asv_compare_results.txt
