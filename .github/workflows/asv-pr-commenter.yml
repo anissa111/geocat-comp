@@ -26,7 +26,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  #v8.0.0
         with:
           script: |
-            var artifacts = await github.actions.listWorkflowRunArtifacts({
+            var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
                run_id: ${{github.event.workflow_run.id }},
@@ -37,13 +37,13 @@ jobs:
             var matchArtifactResults =  artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "benchmark-results"
             })[0];
-            var download_results = await github.actions.downloadArtifact({
+            var download_results = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
                artifact_id: matchArtifact.id,
                archive_format: 'zip',
             });
-            var download_pr = await github.actions.downloadArtifact({
+            var download_pr = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
                artifact_id: matchArtifact.id,
@@ -58,7 +58,6 @@ jobs:
         run: |
           tree .
           cat ./pr/NR
-
           echo "pr_number=$(cat ./pr/NR)" >> $GITHUB_ENV
 
 
