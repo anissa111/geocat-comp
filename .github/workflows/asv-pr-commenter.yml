@@ -52,7 +52,7 @@ jobs:
             var fs = require('fs');
             fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download_pr.data));
             fs.writeFileSync('${{github.workspace}}/benchmark-results.zip', Buffer.from(download_results.data));
-      - run: unzip pr.zip benchmark-results.zip
+      - run: unzip pr.zip; unzip benchmark-results.zip
 
       - name: Read PR number
         run: |
