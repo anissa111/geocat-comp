@@ -52,7 +52,7 @@ jobs:
       - name: Read PR number
         run: |
           tree .
-          cat ./pr/NR
+          cat ./NR
           echo "pr_number=$(cat ./NR)" >> $GITHUB_ENV
 
       - name: fetch repo name
