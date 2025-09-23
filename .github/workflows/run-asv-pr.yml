@@ -85,13 +85,6 @@ jobs:
             ${{ env.ASV_DIR }}/results
             ${{ env.ASV_DIR }}/asv_compare_results.txt
 
-      - name: Update preview comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 #v4
-        with:
-          comment-id: ${{ env.COMMENT_ID }}
-          edit-mode: replace
-          body-path: ${{ env.ASV_DIR }}/asv_compare_results.txt
-
       - name: Save PR number
         run: |
           mkdir -p ./pr
