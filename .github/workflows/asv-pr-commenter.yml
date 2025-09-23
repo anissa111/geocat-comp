@@ -40,13 +40,13 @@ jobs:
             var download_results = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
+               artifact_id: matchArtifactResults.id,
                archive_format: 'zip',
             });
             var download_pr = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
+               artifact_id: matchArtifactPR.id,
                archive_format: 'zip',
             });
             var fs = require('fs');
