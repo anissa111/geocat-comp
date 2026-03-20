@@ -979,3 +979,5 @@ class Test_zonal_meridional_psi:
         out_plev = zonal_meridional_psi(uxds_plev, lat=self.lat)
         # Check that integration handled orientation correctly
         np.testing.assert_allclose(out_hybrid, out_plev)
+
+        assert False
