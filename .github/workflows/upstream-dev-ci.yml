@@ -146,7 +146,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Create or update failure issue
-        if: ${{jobs.upstream-dev-numpy.outputs.testResults == 'failure' || jobs.upstream-dev-with-uxarray.outputs.testResults == 'failure'}}
+        if: jobs.upstream-dev-numpy.outputs.testResults == 'failure' || jobs.upstream-dev-with-uxarray.outputs.testResults == 'failure'
         shell: bash
         run: |
           # Read the template
