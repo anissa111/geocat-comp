@@ -20,8 +20,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.13"]
-    outputs:
-      testResults: ${{ steps.nptests.outcome }}
 
     steps:
       - name: checkout
@@ -62,7 +60,6 @@ jobs:
           conda list
 
       - name: Run Tests
-        id: nptests
         uses: nick-fields/retry@ce71cc2ab81d554ebbe88c79ab5975992d79ba08 # v3
         with:
           timeout_minutes: 60
@@ -84,8 +81,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.13"]
-    outputs:
-      testResults: ${{ steps.uxtests.outcome }}
 
     steps:
       - name: checkout
@@ -126,7 +121,6 @@ jobs:
           conda list
 
       - name: Run Tests
-        id: uxtests
         uses: nick-fields/retry@ce71cc2ab81d554ebbe88c79ab5975992d79ba08 # v3
         with:
           timeout_minutes: 60
@@ -140,13 +134,13 @@ jobs:
   failure-issue:
     name: failure-issue
     needs: [upstream-dev-numpy, upstream-dev-with-uxarray]
+    if: ${{ failure() }}
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - name: Create or update failure issue
-        if: jobs.upstream-dev-numpy.outputs.testResults == 'failure' || jobs.upstream-dev-with-uxarray.outputs.testResults == 'failure'
         shell: bash
         run: |
           # Read the template
