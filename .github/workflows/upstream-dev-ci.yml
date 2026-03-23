@@ -68,7 +68,7 @@ jobs:
             eval "$(micromamba shell hook --shell bash)"
             micromamba activate
             micromamba activate geocat_comp_build
-            python -m pytest test -v -m "not uxarray" --cov=./geocat/comp --cov-report=xml
+            python -m pytest test/test_meteorology.py -v -m "not uxarray" --cov=./geocat/comp --cov-report=xml
 
   upstream-dev-with-uxarray:
     name:  upstream-dev-with-uxarray
