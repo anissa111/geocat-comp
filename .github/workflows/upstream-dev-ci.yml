@@ -12,6 +12,7 @@ jobs:
   upstream-dev-numpy:
     name:  upstream-dev-numpy
     runs-on: ubuntu-latest
+    continue-on-error: true
     defaults:
       run:
         shell: bash -l {0}
@@ -72,6 +73,7 @@ jobs:
   upstream-dev-with-uxarray:
     name:  upstream-dev-with-uxarray
     runs-on: ubuntu-latest
+    continue-on-error: true
     defaults:
       run:
         shell: bash -l {0}
@@ -129,8 +131,16 @@ jobs:
             micromamba activate geocat_comp_build
             python -m pytest test/test_meteorology.py -k "descending_vs_ascending" -v --last-failed --cov=./geocat/comp --cov-report=xml
 
+  failure-issue:
+    name: failure-issue
+    needs: [upstream-dev-numpy, upstream-dev-with-uxarray]
+    if: jobs.upstream-dev-numpy.result == 'failure' || jobs.upstream-dev-with-uxarray.result
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
       - name: Create or update failure issue
-        if: ${{ failure() }}
         shell: bash
         run: |
           # Read the template
