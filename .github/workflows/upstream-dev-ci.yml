@@ -134,7 +134,7 @@ jobs:
   failure-issue:
     name: failure-issue
     needs: [upstream-dev-numpy, upstream-dev-with-uxarray]
-    if: needs.upstream-dev-numpy.result == "failure" || needs.upstream-dev-with-uxarray.result == "failure"
+    if: ${{needs.upstream-dev-numpy.result == failure() || needs.upstream-dev-with-uxarray.result == failure()}}
     runs-on: ubuntu-latest
     defaults:
       run:
