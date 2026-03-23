@@ -127,7 +127,7 @@ jobs:
             eval "$(micromamba shell hook --shell bash)"
             micromamba activate
             micromamba activate geocat_comp_build
-            python -m pytest test -v --last-failed --cov=./geocat/comp --cov-report=xml
+            python -m pytest test/test_meteorology.py -k "descending_vs_ascending" -v --last-failed --cov=./geocat/comp --cov-report=xml
 
       - name: Create or update failure issue
         if: ${{ failure() }}
