@@ -134,12 +134,16 @@ jobs:
   failure-issue:
     name: failure-issue
     needs: [upstream-dev-numpy, upstream-dev-with-uxarray]
-    if: ${{needs.upstream-dev-numpy.result == failure() || needs.upstream-dev-with-uxarray.result == failure()}}
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
     steps:
+      - name: debug
+        shell: bash
+        run: |
+          echo ${{ needs.upstream-dev-numpy.result }}
+          echo ${{ needs.upstream-dev-with-uxarray.result }}
       - name: Create or update failure issue
         shell: bash
         run: |
@@ -153,7 +157,7 @@ jobs:
           issue_body="${issue_body//\{\{DATE\}\}/$(date -u)}"
 
           # Check for existing open issue with same title
-          issue_title="🤖Upstream testing failure"
+          issue_title="🤖 Upstream testing failure"
           existing_issue=$(gh issue list --state open --label "CI" --search "\"$issue_title\" in:title" --json number --jq '.[0].number // empty')
 
           if [ -n "$existing_issue" ]; then
