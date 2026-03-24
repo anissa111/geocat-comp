@@ -186,3 +186,8 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ github.token }}
+
+      - name: make sure to report a failed workflow
+        shell: bash
+        run: |
+          exit 1;
