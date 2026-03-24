@@ -187,6 +187,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+  report-failed:
+    name: report-failed
+    needs: [upstream-dev-numpy, upstream-dev-with-uxarray, failure-issue]
+    if: ${{needs.upstream-dev-numpy.outputs.testresults != 'success' || needs.upstream-dev-with-uxarray.outputs.testresults != 'success'}}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
       - name: make sure to report a failed workflow
         shell: bash
         run: |
