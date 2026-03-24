@@ -146,11 +146,16 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
+      - name: checkout
+        uses: actions/checkout@v6.0.2
+
       - name: debug
         shell: bash
         run: |
-          echo ${{ needs.upstream-dev-numpy.result }}
-          echo ${{ needs.upstream-dev-with-uxarray.result }}
+          ls .github/
+          echo ${{ needs.upstream-dev-numpy.outputs.testresults }}
+          echo ${{ needs.upstream-dev-with-uxarray.outputs.testresults }}
+
       - name: Create or update failure issue
         shell: bash
         run: |
