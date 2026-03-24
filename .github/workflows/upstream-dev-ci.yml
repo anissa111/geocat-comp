@@ -170,7 +170,7 @@ jobs:
 
           # Check for existing open issue with same title
           issue_title="🤖 Upstream testing failure"
-          existing_issue=$(gh issue list --state open --label "CI" --search "\"$issue_title\" in:title" --json number --jq '.[0].number // empty')
+          existing_issue=$(gh issue list -R anissa111/geocat-comp --state open --label "CI" --search "\"$issue_title\" in:title" --json number --jq '.[0].number // empty')
 
           if [ -n "$existing_issue" ]; then
             echo "Found existing open issue #$existing_issue, updating it..."
