@@ -71,7 +71,7 @@ jobs:
             eval "$(micromamba shell hook --shell bash)"
             micromamba activate
             micromamba activate geocat_comp_build
-            python -m pytest test/test_meteorology.py -v -m "not uxarray" --cov=./geocat/comp --cov-report=xml
+            python -m pytest test -v -m "not uxarray" --cov=./geocat/comp --cov-report=xml
 
   upstream-dev-with-uxarray:
     name:  upstream-dev-with-uxarray
@@ -135,12 +135,15 @@ jobs:
             eval "$(micromamba shell hook --shell bash)"
             micromamba activate
             micromamba activate geocat_comp_build
-            python -m pytest test/test_meteorology.py -k "descending_vs_ascending" -v --last-failed --cov=./geocat/comp --cov-report=xml
+            python -m pytest test -v --last-failed --cov=./geocat/comp --cov-report=xml
 
   failure-issue:
     name: failure-issue
     needs: [upstream-dev-numpy, upstream-dev-with-uxarray]
-    if: ${{needs.upstream-dev-numpy.outputs.testresults != 'success' || needs.upstream-dev-with-uxarray.outputs.testresults != 'success'}}
+    if: |
+      (needs.upstream-dev-numpy.outputs.testresults != 'success' || needs.upstream-dev-with-uxarray.outputs.testresults != 'success')
+      && github.repository == 'NCAR/geocat-comp'
+      && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -163,7 +166,7 @@ jobs:
 
           # Check for existing open issue with same title
           issue_title="🤖 Upstream testing failure"
-          existing_issue=$(gh issue list -R anissa111/geocat-comp --state open --label "testing" --search "\"$issue_title\" in:title" --json number --jq '.[0].number // empty')
+          existing_issue=$(gh issue list --state open --label "testing" --search "\"$issue_title\" in:title" --json number --jq '.[0].number // empty')
 
           if [ -n "$existing_issue" ]; then
             echo "Found existing open issue #$existing_issue, updating it..."
